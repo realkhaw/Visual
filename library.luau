@@ -3325,3 +3325,5 @@ function Library:app(params)
 
 	return Tabs
 end
+
+return Library
