@@ -153,7 +153,7 @@ local Module = (function(a, b)
 			return Section:Paragarp({
 				Title = Title,
 				Icon = Icon,
-				Status = Icon or "None",
+				Status = Status or "None",
 				Desc = Desc
 			})
 		end
@@ -492,11 +492,9 @@ local Module = (function(a, b)
 	end
 
 	Configs = Serialized.Configs:Load()
+	Serialized.Config = Configs
 
-	return {
-		Serialized,
-		translate
-	}
+	return { Serialized, translate }
 end)(getgenv(), game:GetService('Players').LocalPlayer)
 
 return table.unpack(Module)
