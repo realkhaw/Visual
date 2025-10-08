@@ -433,7 +433,7 @@ function Library:app(params)
 	local Enums = params.Enums or Enum.KeyCode.F1
 	local StartSize = params.Size or Vector2.new(500,360)
 	local MinSize = params.MinSize or Vector2.new(500, 350)
-	local MaxSize = params.MaxSize or Vector2.new(540, 600)
+	local MaxSize = params.MaxSize or Vector2.new(850, 600)
 
 	local VSCODE = Instance.new("ScreenGui")
 	local Main_1 = Instance.new("Frame")
@@ -1510,13 +1510,13 @@ function Library:app(params)
 				local Desc = params.Desc or nil
 				local Icon = params.Icon or nil
 				local IconSize = params.IconSize or 40
-				local StatusValue = params.Status or "None"
+				local StatusValue = params.Status
 				local Rower = nil
 
-				if StatusValue ~= "None" then
-					Rower = Library:Row(ScrollingPAGE_1, Title, Desc, 0.75, Icon, IconSize)
-				else
+				if StatusValue == 'None' then
 					Rower = Library:Row(ScrollingPAGE_1, Title, Desc, 1, Icon, IconSize)
+				else
+					Rower = Library:Row(ScrollingPAGE_1, Title, Desc, 0.8, Icon, IconSize)
 				end
 
 				local selfs = {}
@@ -1529,10 +1529,10 @@ function Library:app(params)
 
 				Statust.Name = "Status"
 
-				if StatusValue ~= "None" then
-					StatusValue = true
+				if StatusValue == 'None' then
+					Statust.Visible = false
 				else
-					StatusValue = false
+					Statust.Visible = true
 				end
 
 				Statust.Parent = Rower
@@ -1569,17 +1569,12 @@ function Library:app(params)
 				LightCircle_1.Image = "rbxassetid://110890831577968"
 				LightCircle_1.ImageColor3 = Color3.fromRGB(255, 255, 0)
 
-				function selfs:SetStatus(value)
-					if not value then
-						Circle_1.BackgroundColor3 = Color3.fromRGB(254,93,86)
-						LightCircle_1.ImageColor3 = Color3.fromRGB(254,93,86)
-					else
-						Circle_1.BackgroundColor3 = Color3.fromRGB(56,193,76)
-						LightCircle_1.ImageColor3 = Color3.fromRGB(56,193,76)
-					end
+				function selfs:SetColor(color)
+					Circle_1.BackgroundColor3 = color
+					LightCircle_1.ImageColor3 = color
 				end
 
-				selfs:SetStatus(StatusValue)
+				selfs:SetStatus(Color3.fromRGB(255, 255, 255))
 
 				local Titles = Rower.Text.Title
 
@@ -3162,6 +3157,12 @@ function Library:app(params)
 				end
 
 				local function updateSlider(value)
+					for _, v in pairs(Main_1:GetChildren()) do
+						if v.Name == "Dropdown" and v.Visible then
+							return
+						end
+					end
+
 					value = math.clamp(value, Min, Max)
 					value = roundToDecimal(value, Rounding)
 
