@@ -219,12 +219,18 @@ local Module = (function(a, b)
 			})
 		end
 
-		function self:List(Section, Title, Desc, Icon, Setting, List, Type, Multi, Call, Advance)
+		function self:List(Section, Title, Desc, Icon, Setting, List, Type, Multi, Call)
 			return Section:Dropdown({
 				Title = Title,
 				Icon = Icon,
 				Type = Type or "Single",
-				Advance = Advance or {},
+				Advance = {
+					['Select'] = translate("Selected", "เลือกแล้ว"),
+					['Not Select'] = translate("Not Select", "ยังไม่ได้เลือก"),
+					['Clear'] = translate("CLEAR", "เคลียร์"),
+					['Select All'] = translate("ALL", "เลือกทั้งหมด"),
+					['Search'] = translate("Search", "ค้นหา")
+				},
 				Multi = Multi,
 				Desc = Desc,
 				List = List,
@@ -443,13 +449,7 @@ local Module = (function(a, b)
 						"English"
 					}
 
-					self:List(_3, translate('Select Language', "เลือกภาษา"), translate("Select the language you want to use.", "เลือกภาษาที่คุณต้องการใช้"), nil, 'Language', LanguageList, "Double", false, nil, {
-						['Select'] = translate("Selected", "เลือกแล้ว"),
-						['Not Select'] = translate("Not Select", "ยังไม่ได้เลือก"),
-						['Clear'] = translate("CLEAR", "เคลียร์"),
-						['Select All'] = translate("ALL", "เลือกทั้งหมด"),
-						['Search'] = translate("Search", "ค้นหา")
-					})
+					self:List(_3, translate('Select Language', "เลือกภาษา"), translate("Select the language you want to use.", "เลือกภาษาที่คุณต้องการใช้"), nil, 'Language', LanguageList, "Double", false, nil)
 
 					self:Button(_3, translate("Change Language", "เปลี่ยนภาษา"), translate("Apply the selected language and rejoin the server.", "ใช้ภาษาที่เลือกและเข้าร่วมเซิร์ฟเวอร์ใหม่"), nil, function()
 						Utils:Rejoin()
