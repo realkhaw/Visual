@@ -26,7 +26,7 @@ local Module = (function(a, b)
 		local self = {}
 
 		function self:reference(obj)
-			return cloneref and cloneref(obj)
+			return cloneref and cloneref(game:GetService(obj))
 		end
 
 		function self:clone(Function)
