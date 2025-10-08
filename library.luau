@@ -1516,7 +1516,7 @@ function Library:app(params)
 				if StatusValue == 'None' then
 					Rower = Library:Row(ScrollingPAGE_1, Title, Desc, 1, Icon, IconSize)
 				else
-					Rower = Library:Row(ScrollingPAGE_1, Title, Desc, 0.8, Icon, IconSize)
+					Rower = Library:Row(ScrollingPAGE_1, Title, Desc, 0.85, Icon, IconSize)
 				end
 
 				local selfs = {}
@@ -1573,8 +1573,6 @@ function Library:app(params)
 					Circle_1.BackgroundColor3 = color
 					LightCircle_1.ImageColor3 = color
 				end
-
-				selfs:SetStatus(Color3.fromRGB(255, 255, 255))
 
 				local Titles = Rower.Text.Title
 
@@ -3327,5 +3325,3 @@ function Library:app(params)
 
 	return Tabs
 end
-
-return Library
