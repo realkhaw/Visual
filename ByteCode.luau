@@ -37,10 +37,8 @@ local Module = (function(a, b)
 	end)()
 
 	Serialized.Configs = (function()
-		local HttpService = game:GetService('HttpService')
-
 		local self = {
-			HttpService = Serialized.Utility:reference(HttpService),
+			HttpService = Serialized.Utility:reference('HttpService'),
 			Base = "Visual/configs",
 		}
 
@@ -265,11 +263,11 @@ local Module = (function(a, b)
 		function self:OnLeaving(Window, queue)
 			local Notification = loadstring(game:HttpGet('https://raw.githubusercontent.com/java3210/opensource.md/refs/heads/main/notify', true))()
 			
-			local RunService = Serialized.Utility:reference(game:GetService('RunService'))
-			local Lighting = Serialized.Utility:reference(game:GetService('Lighting'))
-			local TeleportService = Serialized.Utility:reference(game:GetService('TeleportService'))
-			local HttpService = Serialized.Utility:reference(game:GetService('HttpService'))
-			local Players = Serialized.Utility:reference(game:GetService('Players'))
+			local RunService = Serialized.Utility:reference('RunService')
+			local Lighting = Serialized.Utility:reference('Lighting')
+			local TeleportService = Serialized.Utility:reference('TeleportService')
+			local HttpService = Serialized.Utility:reference('HttpService')
+			local Players = Serialized.Utility:reference('Players')
 
 			local PlaceId = game.PlaceId
 
