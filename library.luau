@@ -433,7 +433,7 @@ function Library:app(params)
 	local Enums = params.Enums or Enum.KeyCode.F1
 	local StartSize = params.Size or Vector2.new(500,360)
 	local MinSize = params.MinSize or Vector2.new(500, 350)
-	local MaxSize = params.MaxSize or Vector2.new(850, 600)
+	local MaxSize = params.MaxSize or Vector2.new(540, 600)
 
 	local VSCODE = Instance.new("ScreenGui")
 	local Main_1 = Instance.new("Frame")
@@ -1514,7 +1514,7 @@ function Library:app(params)
 				local Rower = nil
 
 				if StatusValue ~= "None" then
-					Rower = Library:Row(ScrollingPAGE_1, Title, Desc, nil, Icon, IconSize)
+					Rower = Library:Row(ScrollingPAGE_1, Title, Desc, 0.75, Icon, IconSize)
 				else
 					Rower = Library:Row(ScrollingPAGE_1, Title, Desc, 1, Icon, IconSize)
 				end
@@ -3162,12 +3162,6 @@ function Library:app(params)
 				end
 
 				local function updateSlider(value)
-					for _, v in pairs(Main_1:GetChildren()) do
-						if v.Name == "Dropdown" and v.Visible then
-							return
-						end
-					end
-
 					value = math.clamp(value, Min, Max)
 					value = roundToDecimal(value, Rounding)
 
