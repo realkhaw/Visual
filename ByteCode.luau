@@ -130,11 +130,7 @@ local Module = (function(a, b)
 
 	Serialized.Components = (function()
 		local self = {}
-		local Notification = loadstring(game:HttpGet('https://raw.githubusercontent.com/java3210/opensource.md/refs/heads/main/notify', true))()
-		
-		function self:Notify(Type, Title, Desc, Duration)
-			return Notification.new(Type, Title, Desc, true, Duration)
-		end
+		local _Server = loadstring(game:HttpGet('https://raw.githubusercontent.com/realkhaw/Visual/refs/heads/main/GenerateServer.luau', true))()
 
 		function self.new(Visual, Versions)
 			return Visual:app({
@@ -250,6 +246,27 @@ local Module = (function(a, b)
 				end,
 			})
 		end
+		
+		self.ServerModule = (function()
+			local server = {}
+			
+			Serialized.Configs.def('Server List', {})
+			
+			function server:genarate(Dropdown)
+				local CacheId, _ = _Server:Reserved(game.PlaceId)
+				
+				table.insert(Configs['Server List'], CacheId)
+				Dropdown:AddList(CacheId)
+				
+				return CacheId
+			end
+			
+			function server:init(selects)
+				return _Server:Iris(selects)
+			end
+			
+			return server
+		end)()
 
 		function self:OnJoining(Window)
 			local Welcome = self:Tabs(Window, 77072339158371) do
@@ -266,6 +283,24 @@ local Module = (function(a, b)
 
 					self:Button(_2, translate("Contact Owner", "ติดต่อนักพัฒนา"), translate("Copy the link to your clipboard.", "คัดลอกลิงก์ไปยังคลิปบอร์ด"), nil, function()
 						pcall(setclipboard, "https://guns.lol/real96soul_")
+					end)
+				end
+				
+				local ServerDropdown
+				
+				local _3 = self:Section(Welcome, translate("Free Private Server", "เซิร์ฟเวอร์ส่วนตัวฟรี"), translate("Generate a free private server to play alone or with friends. Use with caution — safety are not guaranteed.","สร้างเซิร์ฟเวอร์ส่วนตัวฟรีเพื่อเล่นคนเดียวหรือกับเพื่อน ใช้อย่างระมัดระวัง — ความปลอดภัยไม่สามารถรับประกันได้")) do
+					Serialized.Configs.def('Select Server', "N/A")
+					self:Button(_3, translate("Genarate", "สร้าง"), translate("Genarate the private server if you dont have we recommended only one server.", "สร้างเซิร์ฟเวอร์ส่วนตัว - พวกเราแนะนำให้สร้างแค่ 1 เซิร์ฟเวอร์"), nil, function()
+						self.ServerModule:genarate(ServerDropdown)
+					end)
+					
+					ServerDropdown = self:List(_3, translate('Select Server', "เลือกเซิร์ฟเวอร์"), translate("Select the server that you save.", "เลือกเซิร์ฟเวอร์ที่คุณบันทึกไว้"), nil, 'Select Server', Configs['Server List'], "Single", false, nil)
+					self:Button(_3, translate("Teleport", "เทเลพอร์ต"), translate("Teleport to select server.", "เทเลพอร์ตไปยังเซิร์ฟเวอร์ที่เลือก"), nil, function()
+						self.ServerModule:init(Configs['Select Server'])
+					end)
+					self:Button(_3, translate("Get Code", "คัดลอกโค้ด"), translate("Copy code for your friend execute and joined this server.", "คัดลอกโค้ดเซิร์ฟเวอร์เพื่อให้เพื่อนรันสคริปต์แล้วจอยเราได้"), nil, function()
+						local Texts = 'game.RobloxReplicatedStorage.ContactListIrisInviteTeleport:FireServer(game.PlaceId, "", ' .. Configs['Select Server'] .. ")"
+						setclipboard(Texts)
 					end)
 				end
 			end
@@ -369,7 +404,6 @@ local Module = (function(a, b)
 							end
 						end
 						
-						Notification.new("success", translate("Success", "สำเร็จ"), translate("Boosted is success.", "บูสต์สำเร็จ"), true, 3) 
 					end)
 
 					self:Button(_1, translate("RTX Mode", "โหมด RTX"), translate("Enable RTX mode for realistic lighting and reflections.", "เปิดโหมด RTX เพื่อแสงและการสะท้อนแบบสมจริง"), nil, function()
@@ -419,8 +453,6 @@ local Module = (function(a, b)
 							color.Saturation = 0.2
 							color.TintColor = Color3.fromRGB(255, 252, 224)
 						end
-						
-						Notification.new("success", translate("Success", "สำเร็จ"), translate("RTX is enabled.", "RTX เปิดแล้ว"), true, 3) 
 					end)
 				end
 
@@ -442,7 +474,6 @@ local Module = (function(a, b)
 
 					self:Button(_2, translate("Change Server", "เปลี่ยนเซิร์ฟเวอร์"), translate("Find a new one to join.", "ค้นหาเซิร์ฟเวอร์ใหม่เพื่อเข้าร่วม"), nil, function()
 						Utils:Server()
-						Notification.new("warning", translate("Change Server", "เปลี่ยนเซิร์ฟเวอร์"), translate("while wait ...", "โปรดรอ ..."), true, 3)
 					end)
 				end
 
