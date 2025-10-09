@@ -365,7 +365,7 @@ function Library:Row(Parent, Title, Desc, Size, Icon, IconSize)
 	if Desc then
 		local Desc_1 = Instance.new("TextLabel")
 
-		Desc_1.Changed:Connect(function()
+		Desc_1:GetPropertyChangedSignal('AbsoluteSize'):Connect(function()
 			Desc_1.Size = UDim2.new(Sizes, 0,0, Desc_1.TextBounds.Y)
 		end)
 
@@ -1481,7 +1481,7 @@ function Library:app(params)
 
 				local Desc_1 = Descss and Instance.new("TextLabel") or nil do
 					if Descss then
-						Desc_1.Changed:Connect(function()
+						Desc_1:GetPropertyChangedSignal('AbsoluteSize'):Connect(function()
 							Desc_1.Size = UDim2.new(1, 0,0, Desc_1.TextBounds.Y)
 						end)
 
