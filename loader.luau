@@ -2,11 +2,11 @@ repeat
 	task.wait()
 until game:IsLoaded() and game:GetService('Players').LocalPlayer
 
-local PlaceId = game.PlaceId
+local PlaceId = game.GameId
 local Path = "https://raw.githubusercontent.com/realkhaw/Visual/refs/heads/main/Data/"
 
 local DATA = {
-	[131716211654599] = 'Fisch'
+	[5750914919] = 'Fisch'
 }
 
 loadstring(game:HttpGet(`{Path}{DATA[PlaceId]}`))()
