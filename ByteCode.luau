@@ -246,25 +246,30 @@ local Module = (function(a, b)
 				end,
 			})
 		end
-		
+
 		self.ServerModule = (function()
 			local server = {}
-			
+
 			Serialized.Configs.def('Server List', {})
-			
+
 			function server:genarate(Dropdown)
 				local CacheId, _ = _Server:Reserved(game.PlaceId)
-				
+
+				repeat task.wait(0.1) until CacheId ~= nil
+
+				Configs['Server List'] = Configs['Server List'] or {}
 				table.insert(Configs['Server List'], CacheId)
+				Serialized.Configs:Save('Server List', Configs['Server List'])
+
 				Dropdown:AddList(CacheId)
-				
+
 				return CacheId
 			end
-			
+
 			function server:init(selects)
 				return _Server:Iris(selects)
 			end
-			
+
 			return server
 		end)()
 
@@ -285,21 +290,21 @@ local Module = (function(a, b)
 						pcall(setclipboard, "https://guns.lol/real96soul_")
 					end)
 				end
-				
+
 				local ServerDropdown
-				
+
 				local _3 = self:Section(Welcome, translate("Free Private Server", "เซิร์ฟเวอร์ส่วนตัวฟรี"), translate("Generate a free private server to play alone or with friends. Use with caution — safety are not guaranteed.","สร้างเซิร์ฟเวอร์ส่วนตัวฟรีเพื่อเล่นคนเดียวหรือกับเพื่อน ใช้อย่างระมัดระวัง — ความปลอดภัยไม่สามารถรับประกันได้")) do
 					Serialized.Configs.def('Select Server', "N/A")
 					self:Button(_3, translate("Genarate", "สร้าง"), translate("Genarate the private server if you dont have we recommended only one server.", "สร้างเซิร์ฟเวอร์ส่วนตัว - พวกเราแนะนำให้สร้างแค่ 1 เซิร์ฟเวอร์"), nil, function()
 						self.ServerModule:genarate(ServerDropdown)
 					end)
-					
+
 					ServerDropdown = self:List(_3, translate('Select Server', "เลือกเซิร์ฟเวอร์"), translate("Select the server that you save.", "เลือกเซิร์ฟเวอร์ที่คุณบันทึกไว้"), nil, 'Select Server', Configs['Server List'], "Single", false, nil)
 					self:Button(_3, translate("Teleport", "เทเลพอร์ต"), translate("Teleport to select server.", "เทเลพอร์ตไปยังเซิร์ฟเวอร์ที่เลือก"), nil, function()
 						self.ServerModule:init(Configs['Select Server'])
 					end)
 					self:Button(_3, translate("Get Code", "คัดลอกโค้ด"), translate("Copy code for your friend execute and joined this server.", "คัดลอกโค้ดเซิร์ฟเวอร์เพื่อให้เพื่อนรันสคริปต์แล้วจอยเราได้"), nil, function()
-						local Texts = 'game.RobloxReplicatedStorage.ContactListIrisInviteTeleport:FireServer(game.PlaceId, "", ' .. Configs['Select Server'] .. ")"
+						local Texts = 'game.RobloxReplicatedStorage.ContactListIrisInviteTeleport:FireServer(game.PlaceId, "", ' .. "'" .. Configs['Select Server'] .. "'" .. ")"
 						setclipboard(Texts)
 					end)
 				end
@@ -403,7 +408,7 @@ local Module = (function(a, b)
 								v.BlastRadius = 1
 							end
 						end
-						
+
 					end)
 
 					self:Button(_1, translate("RTX Mode", "โหมด RTX"), translate("Enable RTX mode for realistic lighting and reflections.", "เปิดโหมด RTX เพื่อแสงและการสะท้อนแบบสมจริง"), nil, function()
@@ -499,12 +504,12 @@ local Module = (function(a, b)
 					self:Button(_4, translate("Cancel Rexecute", "ยกเลิกการรันอัตโนมัติ"), translate("Stop any queued automatic executions or teleports.", "หยุดการรันอัตโนมัติทั้งหมด"), nil, function()
 						pcall(clearteleportqueue or clear_teleport_queue or clearqueuescript)
 					end)
-					
+
 					self:Button(_4, translate("Delete Workspace", "ลบ Workspace"), translate("Delete the saved Visual configuration file.", "ลบไฟล์คอนฟิกที่บันทึกไว้"), nil, function()
 						pcall(delfile, "Visual")
 					end)
 				end
-				
+
 				do
 					pcall(queueonteleport, queue)
 				end
@@ -529,4 +534,349 @@ local Module = (function(a, b)
 	return { Serialized, translate }
 end)(getgenv(), game:GetService('Players').LocalPlayer)
 
-return table.unpack(Module)
+local Deserialized, translate = table.unpack(Module)
+
+--local Deserialized, translate = loadstring(game:HttpGet('https://github.com/realkhaw/Visual/blob/main/ByteCode.luau?raw=true',true))()
+local Utility, Components  = Deserialized.Utility, Deserialized.Components
+local Configs, ConfigsManager = Deserialized.Config, Deserialized.Configs
+
+local Players = Utility:reference('Players')
+local ReplicatedStorage = Utility:reference('ReplicatedStorage')
+local RunService = Utility:reference('RunService')
+local VirtualUser = Utility:reference('VirtualUser')
+local MarketplaceService = Utility:reference('MarketplaceService')
+local CollectionService= Utility:reference('CollectionService')
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer.PlayerGui
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local HumanoidRootPart = Character and Character:WaitForChild("HumanoidRootPart")
+local Humanoid = Character and Character:WaitForChild("Humanoid")
+
+local Zone = workspace:WaitForChild("zones")
+local PlayerStats = workspace:WaitForChild('PlayerStats')
+local active = workspace:WaitForChild('active')
+
+local fishing = Zone:WaitForChild('fishing')
+
+local events = ReplicatedStorage:WaitForChild('events')
+local packages = ReplicatedStorage:WaitForChild('packages')
+local client = ReplicatedStorage:WaitForChild('client')
+
+local Net = packages:WaitForChild('Net')
+local legacyControllers = client:WaitForChild('legacyControllers')
+
+local PlayerController = require(legacyControllers:WaitForChild('PlayerController'))
+
+local Module = {} do
+	function Module:IsAlive()
+		return Character and HumanoidRootPart and Humanoid
+	end
+
+	function Module:Distance(Position)
+		return Position and ((typeof(Position) == 'CFrame' and LocalPlayer:DistanceFromCharacter(Position.Position)) or LocalPlayer:DistanceFromCharacter(Position))
+	end
+
+	function Module:RemoteEvent()
+
+	end
+
+	Module.Rods = (function()
+		local self = {}
+
+		function self:GetRod(Parent)
+			local Name = PlayerStats[LocalPlayer.Name].T[LocalPlayer.Name].Stats.rod.Value
+			if not Name then return nil end
+
+			return Parent and Parent:FindFirstChild(Name)
+		end
+
+		return self
+	end)()
+
+	Module.Position = (function()
+		local self = {}
+
+		ConfigsManager.def('Position List', {
+			['Moosewood'] = "return CFrame.new(359.187622, 133.615952, 232.422897, 0.0273545235, -7.8372473e-09, 0.999625802, -1.73983813e-11, 1, 7.84065701e-09, -0.999625802, -2.31869315e-10, 0.0273545235)"
+		})
+		ConfigsManager.def('Position Data', {
+			'Moosewood'
+		})
+
+		function self:GetPosition(Part)
+			if not Part then return nil end
+			return Part.CFrame
+		end
+
+		function self:tostring(Part)
+			local CFrame = self:GetPosition(Part)
+			if not CFrame then return end
+
+			return "return CFrame.new(" .. tostring(CFrame) .. ")"
+		end
+
+		function self.new(Dropdown, name, Part)
+			local _index = Configs['Position List'][name]
+			if _index then return end
+
+			Configs['Position List'][name] = self:tostring(Part)
+			table.insert(Configs['Position Data'], name)
+			Dropdown:AddList(name)
+		end
+
+		function self:clear(Dropdown, Name)
+			local index = table.find(Name, Configs['Position Data'])
+			if index then
+				table.remove(Configs['Position Data'], index)
+			end
+
+			Configs['Position List'][Name] = nil
+
+			Dropdown:Clear(Name)
+
+			Module.save("Position List", Configs['Position List'])
+			Module.save("Position Data", Configs['Position Data'])
+		end
+
+		function self:warp(name)
+			if not HumanoidRootPart then return end
+			local posString = Configs['Position List'][name]
+			if not posString then return end
+
+			local Position = loadstring(posString)()
+
+			if Module:Distance(Position) > 1 then
+				PlayerController:SetCFrame(Position)
+			end
+		end
+
+		return self
+	end)()
+end
+
+
+local Running = {
+	{
+		['Function'] = function()
+			if not Module:IsAlive() then return end
+
+			if not Configs['Equip and Cast'] then
+				return
+			end
+
+			local Fishing = Character:GetAttribute('Fishing')
+			if Fishing then return end
+
+			local Backpack = LocalPlayer:FindFirstChildOfClass('Backpack')
+			if not Backpack then return end
+
+			local Equipped = Module.Rods:GetRod(Character)
+
+			if not Equipped then
+				local Rod = Module.Rods:GetRod(Backpack)
+
+				if Rod then
+					Humanoid:EquipTool(Rod)
+				end
+
+				return
+			end
+
+			local values = Equipped:FindFirstChild('values')
+			if not values then return end
+
+			local casted = values:FindFirstChild('casted')
+			if casted and casted.Value then return end
+
+			local event = Equipped:FindFirstChild('events')
+			local castAsync = event and event:FindFirstChild('castAsync')
+			if not castAsync then return end
+
+			castAsync:InvokeServer(Configs["Cast"], 1)
+		end
+	},
+	{
+		['Function'] = function()
+			pcall(function()
+				if not Configs['Fast Cast'] then return end
+				if not Module:IsAlive() then return end
+
+				local Equipped = Module.Rods:GetRod(Character)
+				local bobbers = Equipped and Equipped:FindFirstChild("bobber", true)
+
+				if not bobbers then return end
+
+				local Params = RaycastParams.new()
+				Params.FilterType = Enum.RaycastFilterType.Include
+				Params.FilterDescendantsInstances = { workspace.Terrain }
+
+				local RaycastResult = workspace:Raycast(bobbers.Position, -Vector3.yAxis * 100, Params)
+
+				if RaycastResult then
+					if RaycastResult.Instance:IsA("Terrain") then
+						bobbers:PivotTo(CFrame.new(RaycastResult.Position))
+						bobbers:FindFirstChild('BodyVelocity').MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+						bobbers:FindFirstChild('BodyVelocity').Velocity = Vector3.new(0, 0, 0)
+						bobbers.Massless = true
+
+						local Rope = bobbers:FindFirstChildOfClass("RopeConstraint")
+
+						if Rope then
+							Rope.Length = math.huge
+						end
+					end
+				end
+			end)
+		end,
+	},
+	{
+		['Function'] = function()
+			if not Configs['Sell'] then return end
+
+			events.SellAll:InvokeServer()
+			task.wait(Configs["Delay Sell"])
+		end,
+	}
+}
+
+local Connections = {
+	{
+		['Signal'] = LocalPlayer.CharacterAdded,
+		['Action'] = function(v)
+			repeat
+				wait()
+			until v
+
+			Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+
+			repeat 
+				wait()
+			until Character:FindFirstChild('HumanoidRootPart') and Character:FindFirstChild('Humanoid')
+
+			Humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+			HumanoidRootPart = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+		end,
+	},
+	{
+		['Signal'] = PlayerGui.ChildAdded,
+		['Action'] = function(v)
+			pcall(function()
+				if Configs['Reel'] == 'Instant' then
+					events:WaitForChild("bindable_reel_finished"):Fire(true)
+					events:WaitForChild("reelfinished"):FireServer(100, true)
+				end
+
+				local bar = v:WaitForChild('bar', 5)
+				if not bar then return end
+
+				local playerbar = bar:WaitForChild('playerbar', 5)
+				if not playerbar then return end
+
+				playerbar.Size = UDim2.new(1, 0, 1, 0)
+			end)
+		end
+	},
+	{
+		['Signal'] = RunService.PreSimulation,
+		['Action'] = function(v)
+			pcall(function()
+				if not Configs['Shake'] then return end
+
+				local shakeui = PlayerGui:FindFirstChild('shakeui')
+				if not shakeui or not shakeui.safezone.button then return end
+
+				shakeui.safezone.button.Size = UDim2.new(1001, 0, 1001, 0)
+				VirtualUser:Button1Down(Vector2.new(0, 0))
+				VirtualUser:Button1Up(Vector2.new(0, 0))
+			end)
+		end
+	},
+}
+
+local Title = "Fisch 0.0.01"
+
+do
+	local finalized, info = pcall(function()
+		return MarketplaceService:GetProductInfo(game.PlaceId)
+	end)
+
+	if finalized then
+		Title = info.Name .. " 0.0.58"
+	end
+end
+
+local Library = loadstring(game:HttpGet('https://github.com/realkhaw/Visual/blob/main/library.luau?raw=true',true))()
+local Window = Components.new(Library, Title)
+Components:OnJoining(Window)
+
+local DropdownPosition
+
+local General = Components:Tabs(Window, 103207517628191) do
+	local _1 = Components:Section(General, translate("Fishing", "ตกปลา"), translate("Fishing Controller", "แผงควบคุมการตกปลา")) do
+		ConfigsManager.def("Reel", "None")
+		ConfigsManager.def("Shake", true)
+		ConfigsManager.def("Cast", 100)
+
+		Components:Paragarp(_1, Deserialized.html(translate('Anti Cheat', 'แอนตี้ชีท'), Color3.fromRGB(255, 85, 127)),  translate("Fisch now has an anti-cheat system, but it's unclear what it detects. Please use caution.\nDo not Stand on water and fishing - anti-cheat may detect you", "ตอนนี้ Fisch มีกันโปร แต่ยังไม่ทราบแน่ชัดว่ากันอะไรบ้าง โปรดใช้อย่างระมัดระวัง\nอย่ายืนตกปลาบนกลางน้ำ แอนตี้ชีทอาจจะตรวจจับคุณได้"), nil, "true"):SetColor(Color3.fromRGB(255, 85, 127))
+		Components:Toggle(_1, translate("Equip and Cast", "ออโต้ถือเบ็ดและโยนเบ็ด"), translate("Equip current rods and cast.", "ถือเบ็ดที่คุณสวมใส่และโยนเบ็ด"), nil, "Equip and Cast")
+		Components:Toggle(_1, translate("Fast Cast", "โยนเบ็ดเร็ว"), translate("Skip the casting process to increase speed.", "ข้ามขั้นตอนการโยนเพื่อเพิ่มความเร็ว"), nil, "Fast Cast")
+		Components:Toggle(_1, translate("Shake", "ออโต้เขย่า"), translate("Auto click shake button mini game.", "กดปุ่มเขย่าหรือเล่นมินิเกม"), nil, "Shake")
+		Components:List(_1, translate('Select Reel', "เลือกการดึง"), translate("Select the reel mode you want to use.", "เลือกโหมดคุณต้องการใช้"), nil, 'Reel', {
+			"None", "Instant"
+		}, "Double", false)
+		Components:Slider(_1, translate('Cast Distance', 'ระยะการโยนเบ็ด'), translate('Modify cast distance', 'ปรับแต่งระยะการโยนเบ็ด'), nil, "Cast", 1, 100, 1)
+	end
+
+	local _2 = Components:Section(General, translate("Save Position", "ตำแหน่งที่บันทึกไว้"), translate("Position Controller", "แผงควบคุมตำแหน่ง")) do
+		ConfigsManager.def('Select Position', "Moosewood")
+		ConfigsManager.def("Name", "Moosewood")
+
+		Components:Textfield(_2, translate('Position Name', "ชื่อตำแหน่ง"), translate('Enter name position.', "กำหนดชื่อของตำแหน่ง"), nil, 'Name')
+		Components:Button(_2, translate("Save", "บันทึก"), translate("Save position to list, this position will not remove when you leave the game.", "บันทึกตำแหน่งไปยังรายชื่อ ถ้าออกเกมมันจะไม่หาย"), nil, function()
+			if not HumanoidRootPart then return end
+			Module.Position.new(DropdownPosition, Configs["Name"], HumanoidRootPart)
+		end)
+		DropdownPosition = Components:List(_2, translate('Select Save Position', "เลือกตำแหน่งที่บันทึกไว้"), translate("Select position that you save for quick access later, such as sea or shop.", "เลือกตำแหน่งที่คุณได้บันทึกไว้ เพื่อใช้กลับไปยังจุดนั้นได้อย่างรวดเร็ว เช่น ทะเลหรือร้านค้า"), nil, 'Select Position', Configs['Position Data'], "Double", false)
+		Components:Button(_2, translate("Teleport ", "เทเลพอร์ต"), translate("Teleport to select position.", "เทเลพอร์ตไปยังตำแหน่งที่เลือก"), nil, function()
+			Module.Position:warp(Configs['Select Position'])
+		end)
+		Components:Button(_2, translate("Remove", "ลบตำแหน่งที่เลือก"), translate("Remove select position form save list.", "ลบตำแหน่งที่เลือกจากรายชื่อที่บันทึกไว้"), nil, function()
+			Module.Position:clear(DropdownPosition, Configs['Select Position'])
+		end)
+	end
+
+	local _3 = Components:Section(General, translate("Utility", "ตัวช่วย"), translate("Utility Controller", "แผงควบคุมตัวช่วย")) do
+		Components:Toggle(_3, translate("Freeze Ocean", "แช่เเข็งมหาสมุทร"), translate("Freeze ocean and you can walk on water.", "แช่เเข็งมหาสมุทรและสามารถเดินบนน้ำได้"), nil, "Freeze Ocean", function(v)
+			for _, v in pairs(fishing:GetChildren()) do
+				if v:IsA("Part") then
+					v.CanCollide = v
+				end
+			end
+		end)
+		Components:Toggle(_3, translate("Fish Radar", "เครื่องตรวจจับปลา"), translate("Enabled the fish radar highlight.", "เปิดใช้งานการมองเห็นตำแหน่งปลา"), nil, "Fish Radar", function(v)
+			for _, v in pairs(CollectionService:GetTagged("radarTag")) do
+				if v:IsA("BillboardGui") or v:IsA("SurfaceGui") then
+					v.Enabled = v
+				end
+			end
+		end)
+	end
+
+	local _4 = Components:Section(General, translate("Selling", "การขาย"), translate("Selling Controller", "แผงควบคุมการขาย")) do
+		ConfigsManager.def("Delay Sell", 25)
+
+		Components:Slider(_4, translate('Time', 'เวลา'), translate('Delay to Sell', 'เวลาที่จะขายปลา'), nil, "Delay Sell", 1, 60, 1)
+		Components:Toggle(_4, translate("Automatic Sell Any", "ออโต้ขายปลาทั้งหมด"), translate("Sell any fish in your inventory.", "ขายปลาทั้งหมดในระเป๋า"), nil, "Sell")
+		Components:Button(_4, translate("Sell Holding Fish", "ขายปลาที่ถืออยู่"), nil, nil, function()
+			events.Sell:InvokeServer()
+		end)
+		Components:Button(_4, translate("Sell Any", "ขายปลาทั้งหมด"), nil, nil, function()
+			events.SellAll:InvokeServer()
+		end)
+	end
+end
+
+Components:OnLeaving(Window, "loadstring(game:HttpGet('https://xyns.xyz'))()")
+Deserialized:OnRunning(Running)
+Deserialized:OnConnections(Connections)
