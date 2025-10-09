@@ -130,6 +130,11 @@ local Module = (function(a, b)
 
 	Serialized.Components = (function()
 		local self = {}
+		local Notification = loadstring(game:HttpGet('https://raw.githubusercontent.com/java3210/opensource.md/refs/heads/main/notify', true))()
+		
+		function self:Notify(Type, Title, Desc, Duration)
+			return Notification.new(Type, Title, Desc, true, Duration)
+		end
 
 		function self.new(Visual, Versions)
 			return Visual:app({
@@ -267,8 +272,6 @@ local Module = (function(a, b)
 		end
 
 		function self:OnLeaving(Window, queue)
-			local Notification = loadstring(game:HttpGet('https://raw.githubusercontent.com/java3210/opensource.md/refs/heads/main/notify', true))()
-			
 			local RunService = Serialized.Utility:reference('RunService')
 			local Lighting = Serialized.Utility:reference('Lighting')
 			local TeleportService = Serialized.Utility:reference('TeleportService')
