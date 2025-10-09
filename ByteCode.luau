@@ -463,10 +463,10 @@ local Module = (function(a, b)
 						Serialized.Configs:Save('Language', "English")
 					end)
 				end
-				
+
 				local _4 = self:Section(Setting, translate("Configs", "คอนฟิก"), translate("Adjust and manage configurations file.", "ปรับและจัดการค่าการตั้งค่าไฟล์")) do
 					self:Button(_4, translate("Cancel Rexecute", "ยกเลิกการรันอัตโนมัติ"), translate("Stop any queued automatic executions or teleports.", "หยุดการรันอัตโนมัติทั้งหมด"), nil, function()
-						pcall(clearteleportqueue or clear_teleport_queue)
+						pcall(clearteleportqueue or clear_teleport_queue or clearqueuescript)
 					end)
 					
 					self:Button(_4, translate("Delete Workspace", "ลบ Workspace"), translate("Delete the saved Visual configuration file.", "ลบไฟล์คอนฟิกที่บันทึกไว้"), nil, function()
