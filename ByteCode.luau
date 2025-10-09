@@ -249,27 +249,30 @@ local Module = (function(a, b)
 		
 		self.ServerModule = (function()
 			local server = {}
-			
+
 			Serialized.Configs.def('Server List', {})
-			
+
 			function server:genarate(Dropdown)
 				local CacheId, _ = _Server:Reserved(game.PlaceId)
-				
+
 				repeat task.wait(0.1) until CacheId ~= nil
-				print(Configs['Server List'], CacheId)
+
+				Configs['Server List'] = Configs['Server List'] or {}
 				table.insert(Configs['Server List'], CacheId)
 				Serialized.Configs:Save('Server List', Configs['Server List'])
+
 				Dropdown:AddList(CacheId)
-				
+
 				return CacheId
 			end
-			
+
 			function server:init(selects)
 				return _Server:Iris(selects)
 			end
-			
+
 			return server
 		end)()
+
 
 		function self:OnJoining(Window)
 			local Welcome = self:Tabs(Window, 77072339158371) do
@@ -302,7 +305,7 @@ local Module = (function(a, b)
 						self.ServerModule:init(Configs['Select Server'])
 					end)
 					self:Button(_3, translate("Get Code", "คัดลอกโค้ด"), translate("Copy code for your friend execute and joined this server.", "คัดลอกโค้ดเซิร์ฟเวอร์เพื่อให้เพื่อนรันสคริปต์แล้วจอยเราได้"), nil, function()
-						local Texts = 'game.RobloxReplicatedStorage.ContactListIrisInviteTeleport:FireServer(game.PlaceId, "", ' .. Configs['Select Server'] .. ")"
+						local Texts = 'game.RobloxReplicatedStorage.ContactListIrisInviteTeleport:FireServer(game.PlaceId, "", ' .. "'" .. Configs['Select Server'] .. "'" .. ")"
 						setclipboard(Texts)
 					end)
 				end
