@@ -327,7 +327,7 @@ function Library:Row(Parent, Title, Desc, Size, Icon, IconSize)
 	Text_1.BorderSizePixel = 0
 	Text_1.Size = UDim2.new(1, 0,1, 0)
 
-	Title_1.Changed:Connect(function()
+	Title_1:GetPropertyChangedSignal('AbsoluteSize'):Connect(function()
 		if Desc and not Icon then
 			Title_1.Size = UDim2.new(Sizes, 0,0, Title_1.TextBounds.Y)
 			return
@@ -1459,7 +1459,7 @@ function Library:app(params)
 				UIListLayout_1z.Padding = UDim.new(0,1)
 				UIListLayout_1z.SortOrder = Enum.SortOrder.LayoutOrder
 
-				Title_1.Changed:Connect(function()
+				Title_1:GetPropertyChangedSignal('AbsoluteSize'):Connect(function()
 					Title_1.Size = UDim2.new(1, 0,0, Title_1.TextBounds.Y)
 				end)
 
