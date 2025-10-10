@@ -1,16 +1,51 @@
 local Module = (function(a, b)
 	local _ENV = a
+	
+	_ENV.__Break = true
+	
+	if _ENV.__Queue then
+		task.cancel(_ENV.__Queue)
+	end
 
 	local Configs = {}
 	local Serialized = {}
+	
+	local Connections = _ENV.Connections or {} do
+		_ENV.Connections = Connections
 
-	local function translate(en, th)
+		for i = 1, #Connections do
+			Connections[i]:Disconnect()
+		end
+
+		table.clear(Connections)
+	end
+	
+	local Running = _ENV.Running or {} do
+		_ENV.Running = Running
+
+		for i = 1, #Running do
+			task.cancel(Running[i])
+		end
+
+		table.clear(Running)
+	end
+	
+	local QueueOption = {}
+	local RunningOption = {}
+	local SignalOption = {}
+	local Nets = {}
+	
+	local translate = _ENV.translate or function(en, th)
 		if Configs['Language'] == "ไทย" then
 			return tostring(th)
 		end
 
 		return tostring(en)
 	end
+
+	_ENV.__Break = nil
+	_ENV.__Queue = nil
+	_ENV.translate = translate
 
 	Serialized.html = function(text, color)
 		if type(text) == "string" and typeof(color) == "Color3" then
@@ -35,6 +70,53 @@ local Module = (function(a, b)
 
 		return self
 	end)()
+	
+	local RunService = Serialized.Utility:reference('RunService')
+	local Lighting = Serialized.Utility:reference('Lighting')
+	local TeleportService = Serialized.Utility:reference('TeleportService')
+	local HttpService = Serialized.Utility:reference('HttpService')
+	local Players = Serialized.Utility:reference('Players')
+
+	function Serialized:NewThread(condition, interval, fn, custom)
+		while condition do
+			if _ENV.__Break then break end
+
+			local Tick = tick()
+
+			if fn then fn() end
+			if custom and custom() then break end
+
+			repeat
+				RunService.Heartbeat:Wait()
+			until tick() - Tick >= (interval or 0.1)
+		end
+	end
+	
+	function Serialized:NewQueue(Setting, Function)
+		table.insert(QueueOption, {
+			Name = Setting,
+			Function = Function or function()
+				return false
+			end
+		})		
+	end
+	
+	function Serialized:NewConnection(Signal, Action)
+		table.insert(SignalOption, {
+			Signal = Signal,
+			Action = Action or function()
+				return nil
+			end
+		})
+	end
+	
+	function Serialized:NewRunning(Function)
+		table.insert(RunningOption, {
+			Function = Function or function()
+				return nil
+			end
+		})
+	end
 
 	Serialized.Configs = (function()
 		local self = {
@@ -88,15 +170,24 @@ local Module = (function(a, b)
 			self.Smoothing = value
 		end
 
-		function self:OnQueue(Queue)
-			task.spawn(pcall, function() 
+		function self:Queue()
+			_ENV.__Queue = task.spawn(pcall, function() 
 				while task.wait(self.Smoothing and 0.25 or 0) do
-					for _, v in pairs(Queue) do
-						local Name = v['Name']
+					_ENV.OnFarming = false
+
+					if _ENV.__Break then break end
+
+					for _, v in pairs(QueueOption) do
+						if _ENV.__Break then break end
+
+						local Name = v.Name
+
 						if Configs[Name] then
-							local Struction = v["Thread"]()
+							local Struction = v.Function()
 
 							if Name and Struction then
+								_ENV.OnFarming = Struction
+
 								break
 							end
 						end
@@ -105,28 +196,33 @@ local Module = (function(a, b)
 			end)
 		end
 
-		function self:OnRunning(Options)
-			for _, v in pairs(Options) do
-				task.spawn(function()
-					while task.wait() do
-						v['Function']()
+		function self:Running()
+			for _, v in pairs(RunningOption) do
+				table.insert(Running, task.spawn(function()
+					while task.wait(self.Smoothing and 0.25 or 0) do
+						if _ENV.__Break then break end
+						
+						v.Function()
 					end
-				end)
+				end))
 			end
 		end
 
-		function self:OnConnections(Options)
-			for _, v in pairs(Options) do
-				v['Signal']:Connect(v['Action'])
+		function self:Connections()
+			for _, v in pairs(SignalOption) do
+				table.insert(Connections, v['Signal']:Connect(v['Action']))
 			end
 		end
 
-		Serialized.OnQueue = self.OnQueue
-		Serialized.OnRunning = self.OnRunning
-		Serialized.OnConnections = self.OnConnections
+		function self:init()
+			self:Queue()
+			self:Running()
+			self:Connections()
+		end
 
 		return self
 	end)()
+	
 
 	Serialized.Components = (function()
 		local self = {}
@@ -167,6 +263,8 @@ local Module = (function(a, b)
 		end
 
 		function self:Toggle(Section, Title, Desc, Icon, Setting, Call)
+			local Thread = nil
+
 			return Section:Toggle({
 				Title = Title,
 				Desc = Desc,
@@ -175,6 +273,18 @@ local Module = (function(a, b)
 				Call = function(v)
 					Configs[Setting] = v
 					Serialized.Configs:Save(Setting, v)
+
+					if v then
+						Thread = task.spawn(function()
+							if Nets[Setting] then
+								Nets[Setting](Configs[Setting])
+							end
+						end)
+					else
+						if Thread then
+							task.cancel(Thread)
+						end
+					end
 
 					if Call then
 						Call(v)
@@ -246,7 +356,7 @@ local Module = (function(a, b)
 				end,
 			})
 		end
-		
+
 		self.ServerModule = (function()
 			local server = {}
 
@@ -291,15 +401,15 @@ local Module = (function(a, b)
 						pcall(setclipboard, "https://guns.lol/real96soul_")
 					end)
 				end
-				
+
 				local ServerDropdown
-				
+
 				local _3 = self:Section(Welcome, translate("Free Private Server", "เซิร์ฟเวอร์ส่วนตัวฟรี"), translate("Generate a free private server to play alone or with friends. Use with caution — safety are not guaranteed.","สร้างเซิร์ฟเวอร์ส่วนตัวฟรีเพื่อเล่นคนเดียวหรือกับเพื่อน ใช้อย่างระมัดระวัง — ความปลอดภัยไม่สามารถรับประกันได้")) do
 					Serialized.Configs.def('Select Server', "N/A")
 					self:Button(_3, translate("Genarate", "สร้าง"), translate("Genarate the private server if you dont have we recommended only one server.", "สร้างเซิร์ฟเวอร์ส่วนตัว - พวกเราแนะนำให้สร้างแค่ 1 เซิร์ฟเวอร์"), nil, function()
 						self.ServerModule:genarate(ServerDropdown)
 					end)
-					
+
 					ServerDropdown = self:List(_3, translate('Select Server', "เลือกเซิร์ฟเวอร์"), translate("Select the server that you save.", "เลือกเซิร์ฟเวอร์ที่คุณบันทึกไว้"), nil, 'Select Server', Configs['Server List'], "Single", false, nil)
 					self:Button(_3, translate("Teleport", "เทเลพอร์ต"), translate("Teleport to select server.", "เทเลพอร์ตไปยังเซิร์ฟเวอร์ที่เลือก"), nil, function()
 						self.ServerModule:init(Configs['Select Server'])
@@ -313,12 +423,6 @@ local Module = (function(a, b)
 		end
 
 		function self:OnLeaving(Window, queue)
-			local RunService = Serialized.Utility:reference('RunService')
-			local Lighting = Serialized.Utility:reference('Lighting')
-			local TeleportService = Serialized.Utility:reference('TeleportService')
-			local HttpService = Serialized.Utility:reference('HttpService')
-			local Players = Serialized.Utility:reference('Players')
-
 			local PlaceId = game.PlaceId
 
 			local Utils = (function()
@@ -409,7 +513,7 @@ local Module = (function(a, b)
 								v.BlastRadius = 1
 							end
 						end
-						
+
 					end)
 
 					self:Button(_1, translate("RTX Mode", "โหมด RTX"), translate("Enable RTX mode for realistic lighting and reflections.", "เปิดโหมด RTX เพื่อแสงและการสะท้อนแบบสมจริง"), nil, function()
@@ -505,19 +609,45 @@ local Module = (function(a, b)
 					self:Button(_4, translate("Cancel Rexecute", "ยกเลิกการรันอัตโนมัติ"), translate("Stop any queued automatic executions or teleports.", "หยุดการรันอัตโนมัติทั้งหมด"), nil, function()
 						pcall(clearteleportqueue or clear_teleport_queue or clearqueuescript)
 					end)
-					
+
 					self:Button(_4, translate("Delete Workspace", "ลบ Workspace"), translate("Delete the saved Visual configuration file.", "ลบไฟล์คอนฟิกที่บันทึกไว้"), nil, function()
 						pcall(delfile, "Visual")
 					end)
 				end
-				
+
 				do
 					pcall(queueonteleport, queue)
+					Serialized.Thread:init()
 				end
 			end
 		end
 
 
+		return self
+	end)()
+	
+	Serialized.Misc = (function()
+		local self = {}
+		
+		local BodyVelocity = Instance.new("BodyVelocity") do
+			BodyVelocity.Velocity = Vector3.zero
+			BodyVelocity.MaxForce = Vector3.new(0, math.huge, 0)
+			BodyVelocity.P = 1000
+		end
+		
+		if _ENV.BodyVelocity then
+			_ENV.BodyVelocity:Destroy()
+			_ENV.BodyVelocity = nil
+		end
+		
+		_ENV.BodyVelocity = BodyVelocity
+		
+		function self:Parent(Parent)
+			if _ENV.BodyVelocity and not _ENV.BodyVelocity.Parent then
+				_ENV.BodyVelocity.Parent = Parent
+			end
+		end
+		
 		return self
 	end)()
 
@@ -531,6 +661,7 @@ local Module = (function(a, b)
 
 	Configs = Serialized.Configs:Load()
 	Serialized.Config = Configs
+	Serialized.Net = Nets
 
 	return { Serialized, translate }
 end)(getgenv(), game:GetService('Players').LocalPlayer)
