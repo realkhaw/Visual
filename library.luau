@@ -445,18 +445,19 @@ function Library:app(params)
 		local Input_1 = Instance.new("TextButton")
 		Toggle.Name = "Toggle"
 		Toggle.Parent = VSCODE
-		Toggle.AnchorPoint = Vector2.new(0.5, 0)
+		Toggle.AnchorPoint = Vector2.new(1, 0.5)
 		Toggle.BackgroundColor3 = Color3.fromRGB(255,255,255)
 		Toggle.BackgroundTransparency = 1
 		Toggle.BorderColor3 = Color3.fromRGB(0,0,0)
 		Toggle.BorderSizePixel = 0
-		Toggle.Position = UDim2.new(0.5, 0,0, 10)
-		Toggle.Size = UDim2.new(0, 200,0, 7)
+		Toggle.Position = UDim2.new(0.015, 0,0.25, 0)
+		Toggle.Size = UDim2.new(0, 7,0, 200)
 		Toggle.Image = "rbxassetid://80999662900595"
 		Toggle.ImageTransparency = 0.699999988079071
 		Toggle.ScaleType = Enum.ScaleType.Slice
 		Toggle.SliceCenter = Rect.new(256, 256, 256, 256)
 		Toggle.SliceScale = 0.38671875
+		Toggle.Visible = false
 
 		Input_1.Name = "Input"
 		Input_1.Parent = Toggle
@@ -474,22 +475,6 @@ function Library:app(params)
 
 		local function closeopenui()
 			Main_1:TweenPosition(UDim2.new(0.5, 0, 0.5, 0), "Out", "Sine", 0.1, true)
-			Library:Tween({
-				v = Toggle,
-				t = 0.2,
-				s = "Back",
-				d = "Out",
-				g = {ImageTransparency = 0.3}
-			}):Play()
-			delay(0.1, function()
-				Library:Tween({
-					v = Toggle,
-					t = 0.2,
-					s = "Back",
-					d = "Out",
-					g = {ImageTransparency = 0.7}
-				}):Play()
-			end)
 			Main_1.Visible = not Main_1.Visible
 		end
 
@@ -521,6 +506,14 @@ function Library:app(params)
 	Main_1.BorderColor3 = Color3.fromRGB(0,0,0)
 	Main_1.BorderSizePixel = 0
 	Main_1.Position = UDim2.new(0.5, 0,0.5, 0)
+
+	Main_1:GetPropertyChangedSignal('Visible'):Connect(function()
+		if Main_1.Visible then
+			Toggle.Visible = false
+		else
+			Toggle.Visible = true
+		end
+	end)
 
 	if Library.IsMobile then
 		Main_1.Size = UDim2.new(0, 450,0, 300)
@@ -816,6 +809,7 @@ function Library:app(params)
 	local HideButton = Library:Button(Hide_1)
 
 	HideButton.MouseButton1Click:Connect(function()
+		Toggle.Visible = true
 		Main_1.Visible = false
 	end)
 
